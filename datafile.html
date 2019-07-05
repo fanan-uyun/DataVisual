@@ -3,6 +3,12 @@
     <head>
         <meta charset="UTF-8">
         <title>数据可视化</title>
+        <style type="text/css">
+            button{
+                margin-left: 150px;
+
+            }
+        </style>
         <script src="js/jquery-3.1.1.min.js"></script>  <!--导入jQuery文件-->
         <script src="js/Chart.min.js"></script>  <!--导入chart可视化文件-->
     </head>
@@ -11,7 +17,10 @@
         <canvas id="panel" height="330px" width="500px"> <!--画布布局-->
 
         </canvas>
-
+        <div>
+            <button id="btdn1">开始</button>
+            <button id="btdn2">暂停</button>
+        </div>
         <script>
             $(
                 function () {
@@ -29,30 +38,41 @@
                         ]
                     };
                     var line = new Chart(can).Line(canData);
-                    setInterval(
+                    $("#btdn1").click(
                         function () {
-                            $.ajax( //局部提交，只是提交一部分网页，数据通过js返回
-                                {
-                                    type:"get",//ajax请求的类型
-                                    url:"/cgi-bin/data.py",//ajax请求的地址,动态获取数据，数据由/cgi-bin/data.py提供
-                                    data:"",//请求需要携带的数据
-                                    success:function (data) {
-                                        line.addData(
-                                            [data["num"]],
-                                            data["now"]
-                                        );
-                                        var len = line.datasets[0].points.length;//获取点个数
-                                        if(len > 8){
-                                            line.removeData()
+                            Inter=setInterval(
+                                function () {
+                                    $.ajax( //局部提交，只是提交一部分网页，数据通过js返回
+                                        {
+                                            type:"get",//ajax请求的类型
+                                            url:"/cgi-bin/data.py",//ajax请求的地址,动态获取数据，数据由/cgi-bin/data.py提供
+                                            data:"",//请求需要携带的数据
+                                            success:function (data) {
+                                                line.addData(
+                                                    [data["num"]],
+                                                    data["now"]
+                                                );
+                                                var len = line.datasets[0].points.length;//获取点个数
+                                                if(len > 8){
+                                                    line.removeData()
+                                                }
+                                            },//回调函数，如果请求成功，ajax自动调用当前函数，将返回结果传递给data
+                                            error:function (error) {
+                                                console.log(error)
+                                            }//回调函数，如果请求失败，ajax自动调用当前函数，将返回错误传递给error
                                         }
-                                    },//回调函数，如果请求成功，ajax自动调用当前函数，将返回结果传递给data
-                                    error:function (error) {
-                                        console.log(error)
-                                    }//回调函数，如果请求失败，ajax自动调用当前函数，将返回错误传递给error
-                                }
-                            )//使用ajax
-                        },1000
+                                    )//使用ajax
+                                },1000
+                            )
+
+                    $("#btdn2").click(
+                        function () {
+                            clearInterval(Inter);
+                        }
                     )
+                        }
+                    )
+
                 }
             )
 
